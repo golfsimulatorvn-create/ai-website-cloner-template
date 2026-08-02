@@ -1,0 +1,17 @@
+# Bí mật và cấu hình riêng của môi trường
+.env
+config/folders.yaml
+
+# Trạng thái chạy — không commit, trừ facts.md và learned_patterns.md
+state/manifest.json
+state/runs/
+state/cache/
+state/decisions.jsonl
+
+logs/
+output/
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/

@@ -1,0 +1,14 @@
+# Lõi chỉ mục và rào chắn chỉ cần PyYAML — phần này chạy và test được ngay.
+PyYAML>=6.0
+
+# Truy cập Google Drive (S0, S4, S9)
+google-api-python-client>=2.100.0
+google-auth>=2.23.0
+
+# Trích xuất text từ tài liệu (S4)
+python-docx>=1.1.0
+openpyxl>=3.1.0
+pypdf>=4.0.0
+
+# Sinh văn bản (S1-S7)
+anthropic>=0.40.0

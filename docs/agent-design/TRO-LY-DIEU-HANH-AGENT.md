@@ -2,6 +2,11 @@
 
 > Bản thiết kế hệ thống cho AI agent hỗ trợ công tác điều hành tại Công ty TNHH Năng lượng xanh Hoa Huy.
 > Phiên bản 1.0 — thiết kế cho vận hành thật, không phải demo.
+>
+> **Trạng thái hiện thực:** phần lõi không cần LLM (S0 chỉ mục Drive, luật giải
+> nghĩa phiên bản, rào chắn an ninh) đã code và test xong tại
+> [`tro-ly-dieu-hanh/`](../../tro-ly-dieu-hanh/README.md) — 98 test, chạy không
+> cần credential.
 
 ---
 

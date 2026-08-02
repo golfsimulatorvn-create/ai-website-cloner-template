@@ -1,0 +1,31 @@
+# Phạm vi Drive mà agent được chạm tới.
+#
+# Sao chép file này thành config/folders.yaml rồi điền ID thật.
+# folders.yaml KHÔNG commit (đã nằm trong .gitignore) vì nó mô tả cấu trúc
+# thư mục nội bộ của công ty.
+#
+# Lấy folder ID từ URL Drive:
+#   https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrSt
+#                                          ^^^^^^^^^^^^^^^^^^^^^ chính là ID
+
+# Các thư mục agent được ĐỌC. Service account đọc phải được share quyền
+# Viewer vào đúng những thư mục này, không share cả Drive.
+read_roots:
+  - id: "THAY_BANG_ID_THU_MUC_KINH_DOANH"
+    label: "Kinh doanh"
+  - id: "THAY_BANG_ID_THU_MUC_HANH_CHINH"
+    label: "Hành chính"
+  - id: "THAY_BANG_ID_THU_MUC_PHAP_LY"
+    label: "Pháp lý"
+
+# Thư mục DUY NHẤT agent được ghi vào. Service account ghi chỉ được share
+# quyền Editor vào đúng thư mục này — đây là rào chắn thật, phần kiểm tra
+# trong code chỉ là lớp thứ hai.
+write_root:
+  id: "THAY_BANG_ID_THU_MUC_AGENT_OUTPUT"
+  path: "/HOA HUY GREEN/Agent Output"
+
+# Người nhận được phép khi gửi email hoặc chia sẻ file.
+# Mục bắt đầu bằng '@' nghĩa là cả tên miền.
+recipient_allowlist:
+  - "@hoahuy.com"

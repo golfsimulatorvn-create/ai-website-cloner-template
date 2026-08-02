@@ -1,0 +1,82 @@
+# Luật gán docType cho tài liệu trong Drive.
+#
+# Luật ĐẦU TIÊN khớp sẽ thắng — xếp luật cụ thể lên trên, luật chung xuống dưới.
+#
+# path_contains : khớp nếu MỘT trong các chuỗi này nằm trong đường dẫn (bỏ dấu)
+# name_matches  : khớp nếu MỘT trong các regex này khớp tên file (bỏ dấu)
+# order_by      : thứ tự ưu tiên khi chọn bản mới nhất
+#                 version  = số bản trong tên file (v3.2)
+#                 period   = kỳ áp dụng trong tên file (2026-07)
+#                 modified = thời điểm sửa cuối trên Drive
+#
+# Chọn order_by theo bản chất tài liệu, không theo thói quen:
+#   - bảng giá, báo cáo định kỳ  → period trước (kỳ áp dụng mới là thứ đang hỏi)
+#   - mẫu văn bản, quy trình     → version trước (số bản mới là thứ đang hỏi)
+
+rules:
+  - doc_type: bang_gia
+    label: Bảng giá
+    path_contains: ["bang gia", "kinh doanh/bang gia"]
+    name_matches: ["bang ?gia", "price ?list", "don gia"]
+    order_by: [period, version, modified]
+
+  - doc_type: bao_gia
+    label: Báo giá gửi khách
+    path_contains: ["bao gia"]
+    name_matches: ["bao ?gia", "quotation"]
+    order_by: [period, version, modified]
+
+  - doc_type: mau_van_ban
+    label: Mẫu văn bản hành chính
+    path_contains: ["mau", "bieu mau", "template"]
+    name_matches: ["^mau ", "mau [a-z]", "template", "bieu mau"]
+    order_by: [version, period, modified]
+
+  - doc_type: quy_trinh
+    label: Quy trình nội bộ
+    path_contains: ["quy trinh", "quy dinh", "iso"]
+    name_matches: ["quy ?trinh", "quy ?dinh", "sop"]
+    order_by: [version, period, modified]
+
+  - doc_type: phap_ly
+    label: Hồ sơ pháp lý
+    path_contains: ["phap ly", "giay phep", "chung nhan", "ho so nang luc"]
+    name_matches: ["giay ?phep", "giay ?chung ?nhan", "dang ky kinh doanh",
+                   "pccc", "phong chay", "co so huu"]
+    order_by: [period, version, modified]
+
+  - doc_type: hop_dong
+    label: Hợp đồng
+    path_contains: ["hop dong"]
+    name_matches: ["hop ?dong", "contract", "phu luc"]
+    order_by: [period, version, modified]
+
+  - doc_type: cong_van
+    label: Công văn
+    path_contains: ["cong van", "van ban di", "van ban den"]
+    name_matches: ["cong ?van", "^cv[-_ ]"]
+    order_by: [period, version, modified]
+
+  - doc_type: bien_ban
+    label: Biên bản họp
+    path_contains: ["bien ban", "hop"]
+    name_matches: ["bien ?ban", "^bb[-_ ]", "meeting ?note"]
+    order_by: [period, version, modified]
+
+  - doc_type: bao_cao
+    label: Báo cáo
+    path_contains: ["bao cao"]
+    name_matches: ["bao ?cao", "report"]
+    order_by: [period, version, modified]
+
+  - doc_type: ho_so_ky_thuat
+    label: Hồ sơ kỹ thuật dự án
+    path_contains: ["ky thuat", "du an", "thiet ke"]
+    name_matches: ["ho ?so ?ky ?thuat", "thiet ?ke", "so do", "datasheet"]
+    order_by: [version, period, modified]
+
+  - doc_type: nhan_su
+    label: Nhân sự
+    path_contains: ["nhan su", "hanh chinh nhan su"]
+    name_matches: ["nhan ?su", "bang ?luong", "cham ?cong"]
+    order_by: [period, version, modified]

@@ -14,6 +14,17 @@ cách trôi chảy. Nó cũng là **mốc đối chứng** — trước khi thê
 nào, hãy đo xem bản thuần luật này trả lời đúng bao nhiêu phần trăm câu hỏi
 thật. Model chỉ đáng thêm vào chỗ nó thắng được con số đó.
 
+## Chạy thử ngay (không cần Drive)
+
+```bash
+cd tro-ly-dieu-hanh
+python3 -m src.demo --all
+```
+
+Chạy 8 câu hỏi trên kho tài liệu giả và cho thấy cả bốn kiểu kết quả — kể cả
+lúc agent từ chối trả lời. Xem [`HUONG-DAN-CHAY-THU.md`](HUONG-DAN-CHAY-THU.md)
+để biết cách đọc kết quả và cách nối vào Drive thật.
+
 ## Đã có gì
 
 | Thành phần | File | Trạng thái |
@@ -28,6 +39,7 @@ thật. Model chỉ đáng thêm vào chỗ nó thắng được con số đó.
 | S4+S5 — truy xuất và kiểm chứng nguồn | `src/stages/s4_retrieve.py` | ✅ có test |
 | S8 — cổng phê duyệt | `src/stages/s8_approve.py` | ✅ có test |
 | CLI (`index`, `lookup`) | `src/main.py` | ✅ có test đầu-cuối |
+| Demo với Drive giả lập | `src/demo.py` | ✅ có test |
 | Luật gán docType | `config/doctypes.yaml` | ✅ có test |
 | Sổ dữ kiện công ty | `state/facts.md` | 📝 cần điền |
 
@@ -43,7 +55,7 @@ cd tro-ly-dieu-hanh
 python3 -m unittest discover -s tests -t .
 ```
 
-174 test, chạy dưới 0,2 giây. Chạy lại sau **mọi** thay đổi config hoặc prompt —
+184 test, chạy dưới 0,3 giây. Chạy lại sau **mọi** thay đổi config hoặc prompt —
 nhóm `test_guards.py` là thứ duy nhất đảm bảo các ràng buộc an ninh còn nguyên
 sau khi ai đó dọn dẹp code.
 

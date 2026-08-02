@@ -2,8 +2,14 @@
 #
 # Luật ĐẦU TIÊN khớp sẽ thắng — xếp luật cụ thể lên trên, luật chung xuống dưới.
 #
-# path_contains : khớp nếu MỘT trong các chuỗi này nằm trong đường dẫn (bỏ dấu)
 # name_matches  : khớp nếu MỘT trong các regex này khớp tên file (bỏ dấu)
+# path_contains : khớp nếu MỘT trong các chuỗi này nằm trong đường dẫn (bỏ dấu)
+#
+# Phân loại chạy HAI VÒNG: xét name_matches của tất cả luật trước, hết mới xét
+# path_contains. Tên file là tín hiệu mạnh hơn thư mục chứa nó, nên "Biên bản
+# nghiệm thu.docx" nằm trong /Hợp đồng vẫn được nhận là biên bản.
+# Vì vậy name_matches nên viết CHẶT (khớp đúng loại tài liệu), còn path_contains
+# viết RỘNG hơn cũng được — nó chỉ dùng cho những file đặt tên chung chung.
 # order_by      : thứ tự ưu tiên khi chọn bản mới nhất
 #                 version  = số bản trong tên file (v3.2)
 #                 period   = kỳ áp dụng trong tên file (2026-07)

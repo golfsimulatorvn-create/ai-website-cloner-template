@@ -40,16 +40,17 @@ class DocTypeRule:
     name_matches: list[str] = field(default_factory=list)
     order_by: tuple[str, ...] = DEFAULT_ORDER
 
+    def matches_name(self, name: str) -> bool:
+        norm_name = normalize(name)
+        return any(re.search(normalize(p), norm_name) for p in self.name_matches)
+
+    def matches_path(self, path: str) -> bool:
+        norm_path = normalize(path)
+        return any(normalize(p) in norm_path for p in self.path_contains)
+
     def matches(self, path: str, name: str) -> bool:
-        norm_path, norm_name = normalize(path), normalize(name)
-        if self.path_contains and not any(normalize(p) in norm_path for p in self.path_contains):
-            return False
-        if self.name_matches and not any(
-            re.search(normalize(pattern), norm_name) for pattern in self.name_matches
-        ):
-            return False
-        # Luật rỗng hoàn toàn không được khớp mọi thứ
-        return bool(self.path_contains or self.name_matches)
+        """Khớp nếu tên HOẶC đường dẫn khớp. Xem `classify` về thứ tự ưu tiên."""
+        return self.matches_name(name) or self.matches_path(path)
 
 
 @dataclass
@@ -130,9 +131,25 @@ class Resolution:
 
 
 def classify(path: str, name: str, rules: Sequence[DocTypeRule]) -> str:
-    """Gán docType. Luật đầu tiên khớp sẽ thắng, nên xếp luật cụ thể lên trước."""
+    """Gán docType. Tên file thắng đường dẫn; trong mỗi vòng, luật đầu tiên thắng.
+
+    Hai vòng chứ không phải một, vì tên file là tín hiệu mạnh hơn nhiều so với
+    thư mục chứa nó:
+
+      - Đòi hỏi cả hai cùng khớp thì "Mẫu công văn.docx" nằm trong /Hành chính
+        sẽ rơi vào nhóm 'khac' — tài liệu có thật mà agent tìm không ra.
+      - Khớp một trong hai theo cùng một vòng thì "Biên bản nghiệm thu.docx"
+        nằm trong /Hợp đồng lại bị gán nhầm thành hợp đồng, vì luật hợp đồng
+        đứng trước và đường dẫn khớp.
+
+    Ưu tiên tên trước, đường dẫn sau, giải quyết được cả hai. Đường dẫn vẫn có
+    ích cho những file đặt tên chung chung nằm trong thư mục rõ ràng.
+    """
     for rule in rules:
-        if rule.matches(path, name):
+        if rule.matches_name(name):
+            return rule.doc_type
+    for rule in rules:
+        if rule.matches_path(path):
             return rule.doc_type
     return "khac"
 

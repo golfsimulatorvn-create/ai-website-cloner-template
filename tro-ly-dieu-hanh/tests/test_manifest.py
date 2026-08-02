@@ -54,9 +54,32 @@ class TestClassify(unittest.TestCase):
     def test_unmatched_falls_back_to_khac(self):
         self.assertEqual(classify("/Linh tinh", "Ghi chú.docx", RULES), "khac")
 
-    def test_requires_both_path_and_name_when_both_declared(self):
-        # Tên khớp nhưng nằm sai thư mục → không nhận
-        self.assertEqual(classify("/Nhân sự", "Bảng giá pin.xlsx", RULES), "khac")
+    def test_name_match_alone_is_enough(self):
+        """Tên file nói rõ là bảng giá thì nằm ở thư mục nào cũng vẫn là bảng giá.
+
+        Đòi hỏi cả tên lẫn đường dẫn cùng khớp sẽ đẩy tài liệu có thật vào nhóm
+        'khac' — agent tìm không ra thứ đang nằm ngay đó.
+        """
+        self.assertEqual(classify("/Nhân sự", "Bảng giá pin.xlsx", RULES), "bang_gia")
+
+    def test_path_match_alone_is_enough(self):
+        """File đặt tên chung chung trong thư mục rõ ràng vẫn phân loại được."""
+        self.assertEqual(classify("/Kinh doanh/Bang gia", "Danh sách.xlsx", RULES),
+                         "bang_gia")
+
+    def test_name_beats_path_across_rules(self):
+        """Tên thắng đường dẫn, kể cả khi luật khớp đường dẫn đứng trước.
+
+        'Biên bản nghiệm thu' nằm trong /Hợp đồng phải là biên bản, không phải
+        hợp đồng — nếu xét chung một vòng thì luật hợp đồng đứng trước sẽ thắng.
+        """
+        rules = [
+            DocTypeRule(doc_type="hop_dong", path_contains=["hop dong"],
+                        name_matches=["hop ?dong"]),
+            DocTypeRule(doc_type="bien_ban", name_matches=["bien ?ban"]),
+        ]
+        self.assertEqual(classify("/Kinh doanh/Hợp đồng", "Biên bản nghiệm thu.docx", rules),
+                         "bien_ban")
 
     def test_first_matching_rule_wins(self):
         rules = [

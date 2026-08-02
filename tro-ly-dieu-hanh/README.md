@@ -3,11 +3,16 @@
 Phần lõi đã chạy được của agent mô tả trong
 [`docs/agent-design/TRO-LY-DIEU-HANH-AGENT.md`](../docs/agent-design/TRO-LY-DIEU-HANH-AGENT.md).
 
-Bước này hiện thực đúng phần **Ngày 1–2 của lộ trình MVP**: chỉ mục Drive, luật
-giải nghĩa phiên bản, và rào chắn an ninh — tức là toàn bộ phần *không cần LLM*.
-Làm xong phần này trước là có chủ đích: nó rẻ, chạy nhanh, test được đầy đủ, và
-nó quyết định chất lượng của mọi thứ phía sau. Một agent truy xuất sai tài liệu
-thì model có giỏi đến đâu cũng chỉ soạn ra văn bản sai một cách trôi chảy.
+Hiện thực **Ngày 1–3 của lộ trình MVP**: chỉ mục Drive, luật giải nghĩa phiên
+bản, rào chắn an ninh, trích xuất text có cache, truy xuất có kiểm chứng nguồn,
+và cổng phê duyệt. Luồng `LOOKUP` đã chạy được đầu-cuối.
+
+Toàn bộ phần này **không cần LLM** — và đó là chủ đích. Nó rẻ, chạy nhanh, test
+được đầy đủ, và nó quyết định chất lượng của mọi thứ phía sau: một agent truy
+xuất sai tài liệu thì model có giỏi đến đâu cũng chỉ soạn ra văn bản sai một
+cách trôi chảy. Nó cũng là **mốc đối chứng** — trước khi thêm model vào bước
+nào, hãy đo xem bản thuần luật này trả lời đúng bao nhiêu phần trăm câu hỏi
+thật. Model chỉ đáng thêm vào chỗ nó thắng được con số đó.
 
 ## Đã có gì
 
@@ -18,11 +23,16 @@ thì model có giỏi đến đâu cũng chỉ soạn ra văn bản sai một c�
 | Rào chắn an ninh | `src/core/guards.py` | ✅ có test |
 | Nạp và kiểm tra config | `src/core/config.py` | ✅ có test |
 | S0 — quét Drive dựng chỉ mục | `src/stages/s0_index.py` | ✅ có test (Drive giả lập) |
+| S1 rút gọn — bóc từ khoá theo luật | `src/core/intake.py` | ✅ có test |
+| Trích xuất text + cache | `src/tools/extract.py` | ✅ có test |
+| S4+S5 — truy xuất và kiểm chứng nguồn | `src/stages/s4_retrieve.py` | ✅ có test |
+| S8 — cổng phê duyệt | `src/stages/s8_approve.py` | ✅ có test |
+| CLI (`index`, `lookup`) | `src/main.py` | ✅ có test đầu-cuối |
 | Luật gán docType | `config/doctypes.yaml` | ✅ có test |
 | Sổ dữ kiện công ty | `state/facts.md` | 📝 cần điền |
 
-**Chưa có (các bước tiếp theo):** S1–S3 tiếp nhận/định tuyến/lập kế hoạch,
-S4 trích xuất text, S6 soạn thảo, S7 tự kiểm tra, S8 cổng phê duyệt, S9 bàn giao.
+**Chưa có (các bước tiếp theo):** S2 định tuyến 5 luồng, S3 lập kế hoạch,
+S6 soạn thảo, S7 tự kiểm tra, S9 bàn giao — tức là toàn bộ phần cần LLM.
 
 ## Chạy test
 
@@ -33,7 +43,7 @@ cd tro-ly-dieu-hanh
 python3 -m unittest discover -s tests -t .
 ```
 
-98 test, chạy dưới 0,1 giây. Chạy lại sau **mọi** thay đổi config hoặc prompt —
+174 test, chạy dưới 0,2 giây. Chạy lại sau **mọi** thay đổi config hoặc prompt —
 nhóm `test_guards.py` là thứ duy nhất đảm bảo các ràng buộc an ninh còn nguyên
 sau khi ai đó dọn dẹp code.
 
@@ -43,12 +53,26 @@ sau khi ai đó dọn dẹp code.
 pip install -r requirements.txt
 cp .env.example .env                          # điền credential
 cp config/folders.example.yaml config/folders.yaml   # điền folder ID
-python3 -m src.stages.s0_index --out state/manifest.json
+
+python3 -m src.main index                            # S0: dựng chỉ mục
+python3 -m src.main lookup "bảng giá pin LiFePO4 mới nhất"
 ```
 
-Kết quả in ra số tài liệu theo từng nhóm. Nếu hơn 40% rơi vào `khac`, hãy bổ
-sung luật trong `config/doctypes.yaml` — chỉ mục kém phân loại thì việc tìm kiếm
-sẽ kém chính xác theo.
+Bước `index` in ra số tài liệu theo từng nhóm. Nếu hơn 40% rơi vào `khac`, hãy
+bổ sung luật trong `config/doctypes.yaml` — chỉ mục kém phân loại thì việc tìm
+kiếm sẽ kém chính xác theo.
+
+Mã thoát của `lookup` mang ý nghĩa riêng, tiện khi gọi từ script:
+
+| Mã | Nghĩa |
+|----|-------|
+| 0 | Trả lời được, kèm nguồn và link Drive |
+| 2 | Câu hỏi không rút được từ khoá nào |
+| 3 | Có xung đột phiên bản — cần người chọn |
+| 4 | Không tìm thấy tài liệu |
+
+Không gộp 3 và 4 thành "lỗi" là có chủ đích: "cần bạn chọn bản nào" và "không
+có tài liệu này" là hai tình huống khác hẳn nhau về cách xử lý tiếp.
 
 ### Hai service account, không dùng chung
 
